@@ -1,0 +1,3 @@
+twitchio
+openai
+deep-translator
