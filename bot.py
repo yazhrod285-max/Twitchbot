@@ -2,7 +2,7 @@ from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
 
-TOKEN = "oauth: ofymmls3q3t29p7osvcpbwadn2dwzv
+TOKEN = "oauth: ofymmls3q3t29p7osvcpbwadn2dwzv"
 
 # Ton channel Twitch (en minuscule)
 CHANNEL = "biohazardbattle"
