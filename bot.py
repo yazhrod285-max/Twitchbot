@@ -2,16 +2,10 @@ import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
-# ===== VARIABLES =====
+# ===== CONFIG (temporaire pour que ça marche direct) =====
 TOKEN = os.getenv("TOKEN")
-channels_env = os.getenv("CHANNELS")
 
-if not TOKEN:
-    raise Exception("TOKEN manquant dans Railway")
-
-if not channels_env:
-    raise Exception("CHANNELS manquant dans Railway")
-
+channels_env = "biohazardbattles,le_zombie_des_meres,maestrosfenomeno"
 channels = [c.strip() for c in channels_env.split(",")]
 
 # ===== BOT =====
