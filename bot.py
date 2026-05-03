@@ -5,11 +5,12 @@ from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
 
+# ✅ Tes chaînes
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
-# 🌍 conversion langue → pays (approximation propre)
+# 🌍 mapping langue → pays (pour drapeaux)
 lang_to_country = {
-    "en": "GB",
+    "en": "US",   # anglais → USA (plus logique que GB sur Twitch)
     "fr": "FR",
     "es": "ES",
     "de": "DE",
@@ -22,11 +23,12 @@ lang_to_country = {
     "ar": "SA"
 }
 
-# 🏳️ fonction pour générer un drapeau automatiquement
+# 🏳️ fonction pour générer les vrais drapeaux
 def get_flag(country_code):
-    if len(country_code) != 2:
+    try:
+        return ''.join(chr(127397 + ord(c)) for c in country_code.upper())
+    except:
         return "🌍"
-    return chr(127397 + ord(country_code[0])) + chr(127397 + ord(country_code[1]))
 
 class Bot(commands.Bot):
 
@@ -49,7 +51,7 @@ class Bot(commands.Bot):
         if len(texte) < 2:
             return
 
-        # 🔴 mots FR à ignorer
+        # 🔴 mots FR à ignorer (anti bug)
         mots_fr = ["salut", "bonjour", "bonsoir", "coucou", "ça va", "cc"]
         if texte in mots_fr:
             return
@@ -57,18 +59,21 @@ class Bot(commands.Bot):
         try:
             langue = detect(texte)
 
+            # ❌ ignore français
             if langue == "fr":
                 return
 
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
 
+            # ❌ sécurité anti doublon
             if traduction.lower() == texte:
                 return
 
-            # 🌍 récup pays + drapeau
+            # 🌍 récup drapeau
             country = lang_to_country.get(langue, "UN")
             drapeau = get_flag(country)
 
+            # ✅ message final propre
             await message.channel.send(
                 f"{drapeau} @{message.author.name} a dit en {langue} : [ {traduction} ]"
             )
