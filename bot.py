@@ -5,7 +5,7 @@ from deep_translator import GoogleTranslator
 # ===== CONFIG (temporaire pour que ça marche direct) =====
 TOKEN = os.getenv("TOKEN")
 
-channels_env = "biohazardbattles,le_zombie_des_meres,maestrosfenomeno"
+channels_env = "biohazardbattles,le_zombie_des_mers,maestrosfenomeno"
 channels = [c.strip() for c in channels_env.split(",")]
 
 # ===== BOT =====
