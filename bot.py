@@ -7,7 +7,9 @@ TOKEN = os.getenv("TOKEN")
 CHANNEL = os.getenv("CHANNEL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
 
 class Bot(commands.Bot):
 
