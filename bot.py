@@ -5,8 +5,39 @@ from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
 
-# ✅ TES CHAÎNES
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
+
+# 🔥 mapping langues → code propre
+LANG_MAP = {
+    "en": "en",  # anglais
+    "fr": "fr",  # français
+    "es": "es",
+    "de": "de",
+    "it": "it",
+    "pt": "pt",
+    "ru": "ru",
+    "ja": "jp",
+    "ko": "kr",
+    "zh-cn": "cn",
+    "zh-tw": "tw",
+    "ar": "sa",
+    "hi": "in",
+    "tr": "tr",
+    "nl": "nl",
+    "pl": "pl",
+    "sv": "se",
+    "no": "no",
+    "da": "dk",
+    "fi": "fi",
+}
+
+# 🔥 correction langues similaires
+LANG_FIX = {
+    "mk": "ru",
+    "uk": "ru",
+    "bg": "ru",
+    "be": "ru",
+}
 
 class Bot(commands.Bot):
 
@@ -19,7 +50,6 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"✅ Bot connecté : {self.nick}")
-        print(f"📺 Channels : {channels_list}")
 
     async def event_message(self, message):
         if message.echo:
@@ -27,11 +57,9 @@ class Bot(commands.Bot):
 
         texte = message.content.strip().lower()
 
-        # ❌ ignore messages trop courts
         if len(texte) < 2:
             return
 
-        # 🔴 bloque mots FR simples
         mots_fr = ["salut", "bonjour", "bonsoir", "coucou", "ça va", "cc"]
         if texte in mots_fr:
             return
@@ -39,19 +67,24 @@ class Bot(commands.Bot):
         try:
             langue = detect(texte)
 
-            # ❌ ignore français
+            # 🔥 correction
+            if langue in LANG_FIX:
+                langue = LANG_FIX[langue]
+
+            # ignore français
             if langue == "fr":
                 return
 
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
 
-            # ❌ sécurité anti doublon
             if traduction.lower() == texte:
                 return
 
-            # 🌍 affichage simple et fiable
+            # 🔥 mapping vers code propre
+            code_affiche = LANG_MAP.get(langue, langue)
+
             await message.channel.send(
-                f"🌍 @{message.author.name} a dit en {langue} : [ {traduction} ]"
+                f"🌍 @{message.author.name} a dit en {code_affiche} : [ {traduction} ]"
             )
 
         except Exception as e:
