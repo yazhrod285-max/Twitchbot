@@ -1,2 +1,2 @@
-twitchio
+twitchio==2.8.2
 deep-translator
