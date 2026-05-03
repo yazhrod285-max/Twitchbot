@@ -5,8 +5,28 @@ from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
 
-# ✅ Tes chaînes directement intégrées
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
+
+# 🌍 conversion langue → pays (approximation propre)
+lang_to_country = {
+    "en": "GB",
+    "fr": "FR",
+    "es": "ES",
+    "de": "DE",
+    "it": "IT",
+    "pt": "PT",
+    "ru": "RU",
+    "ja": "JP",
+    "ko": "KR",
+    "zh-cn": "CN",
+    "ar": "SA"
+}
+
+# 🏳️ fonction pour générer un drapeau automatiquement
+def get_flag(country_code):
+    if len(country_code) != 2:
+        return "🌍"
+    return chr(127397 + ord(country_code[0])) + chr(127397 + ord(country_code[1]))
 
 class Bot(commands.Bot):
 
@@ -19,7 +39,6 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"✅ Bot connecté : {self.nick}")
-        print(f"📺 Channels : {channels_list}")
 
     async def event_message(self, message):
         if message.echo:
@@ -27,11 +46,10 @@ class Bot(commands.Bot):
 
         texte = message.content.strip().lower()
 
-        # ❌ Ignore messages trop courts
         if len(texte) < 2:
             return
 
-        # 🔴 Bloque mots français simples (anti bug langdetect)
+        # 🔴 mots FR à ignorer
         mots_fr = ["salut", "bonjour", "bonsoir", "coucou", "ça va", "cc"]
         if texte in mots_fr:
             return
@@ -39,19 +57,20 @@ class Bot(commands.Bot):
         try:
             langue = detect(texte)
 
-            # ❌ Ignore français
             if langue == "fr":
                 return
 
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
 
-            # ❌ Ignore si identique
             if traduction.lower() == texte:
                 return
 
-            # ✅ UNE SEULE réponse propre
+            # 🌍 récup pays + drapeau
+            country = lang_to_country.get(langue, "UN")
+            drapeau = get_flag(country)
+
             await message.channel.send(
-                f"@{message.author.name} a dit en {langue} : [ {traduction} ]"
+                f"{drapeau} @{message.author.name} a dit en {langue} : [ {traduction} ]"
             )
 
         except Exception as e:
