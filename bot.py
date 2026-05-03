@@ -1,51 +1,52 @@
 import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
-from langdetect import detect
 
-# ===== CONFIG =====
 TOKEN = os.getenv("TOKEN")
+CHANNELS = os.getenv("CHANNELS")
 
-channels_env = "biohazardbattles,le_zombie_des_mers,maestrosfenomeno"
-channels = [c.strip() for c in channels_env.split(",")]
+if not CHANNELS:
+    raise Exception("CHANNELS manquant dans Railway")
 
-# ===== BOT =====
+channels_list = CHANNELS.split(",")
+
 class Bot(commands.Bot):
 
     def __init__(self):
         super().__init__(
             token=TOKEN,
             prefix="!",
-            initial_channels=channels
+            initial_channels=channels_list
         )
 
     async def event_ready(self):
         print(f"Bot connecté : {self.nick}")
-        print(f"CHANNELS = {channels}")
 
     async def event_message(self, message):
-        if message.echo:
+        # Ignore messages du bot (IMPORTANT)
+        if message.author.name.lower() == self.nick.lower():
             return
 
         texte = message.content
 
-        # 🔥 Évite les messages trop courts (anti-spam)
-        if len(texte) < 4:
+        # Ignore messages déjà traduits
+        if "🌍" in texte:
             return
 
+        # Traduction
         try:
-            langue = detect(texte)
+            translated = GoogleTranslator(source='auto', target='fr').translate(texte)
+        except:
+            return
 
-            # ✅ Traduire UNIQUEMENT si ce n'est PAS du français
-            if langue != "fr":
-                traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
-                await message.channel.send(traduction)
+        # Ignore si déjà français
+        if texte.lower() == translated.lower():
+            return
 
-        except Exception as e:
-            print(f"Erreur : {e}")
+        # ✅ SEULEMENT la traduction
+        await message.channel.send(
+            f"🌍 {message.author.name} → {translated}"
+        )
 
-        await self.handle_commands(message)
-
-# ===== LANCEMENT =====
 bot = Bot()
 bot.run()
