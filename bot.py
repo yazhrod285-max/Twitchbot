@@ -25,48 +25,38 @@ class Bot(commands.Bot):
         print(f"Bot connecté : {self.nick}")
 
     async def event_message(self, message):
-        # ❌ ignore tous les bots (très important)
+
+        # ❌ ignore TOUS les bots (y compris Lingo)
         if message.echo or message.author.name.lower().endswith("bot"):
             return
 
         texte = message.content.strip()
 
+        # ❌ ignore messages vides
         if not texte:
             return
 
+        # ❌ ignore messages déjà traités (évite boucle)
+        if "a dit en" in texte:
+            return
+
         try:
-            # détecte automatiquement TOUTES les langues
-            langue_code = detect(texte)
-
-            # traduit en français
+            langue = detect(texte)
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
-
         except:
             return
 
-        # ❌ si déjà français → ignore
-        if langue_code == "fr":
+        # ❌ ignore si déjà français
+        if langue == "fr":
             return
 
-        # mapping lisible (facultatif mais propre)
-        langues = {
-            "en": "anglais",
-            "es": "espagnol",
-            "de": "allemand",
-            "it": "italien",
-            "pt": "portugais",
-            "ru": "russe",
-            "ja": "japonais",
-            "ko": "coréen",
-            "zh-cn": "chinois",
-            "ar": "arabe"
-        }
-
-        langue_nom = langues.get(langue_code, langue_code)
+        # ❌ ignore si traduction identique
+        if texte.lower() == traduction.lower():
+            return
 
         # ✅ UNE SEULE réponse
         await message.channel.send(
-            f"@{message.author.name} a dit en {langue_nom} : [ {traduction} ]"
+            f"@{message.author.name} a dit en {langue} : [ {traduction} ]"
         )
 
 bot = Bot()
