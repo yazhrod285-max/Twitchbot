@@ -2,10 +2,19 @@ import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
-# Récupération des variables Railway
+# ===== VARIABLES =====
 TOKEN = os.getenv("TOKEN")
-channels = os.getenv("CHANNELS").split(",")
+channels_env = os.getenv("CHANNELS")
 
+if not TOKEN:
+    raise Exception("TOKEN manquant dans Railway")
+
+if not channels_env:
+    raise Exception("CHANNELS manquant dans Railway")
+
+channels = [c.strip() for c in channels_env.split(",")]
+
+# ===== BOT =====
 class Bot(commands.Bot):
 
     def __init__(self):
@@ -33,5 +42,6 @@ class Bot(commands.Bot):
 
         await self.handle_commands(message)
 
+# ===== LANCEMENT =====
 bot = Bot()
 bot.run()
