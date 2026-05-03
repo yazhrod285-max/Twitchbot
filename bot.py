@@ -1,9 +1,11 @@
-import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
-TOKEN = os.getenv("TOKEN")
-CHANNEL = os.getenv("CHANNEL")
+
+TOKEN = "oauth: ofymmls3q3t29p7osvcpbwadn2dwzv
+
+# Ton channel Twitch (en minuscule)
+CHANNEL = "biohazardbattle"
 
 class Bot(commands.Bot):
 
@@ -15,7 +17,7 @@ class Bot(commands.Bot):
         )
 
     async def event_ready(self):
-        print("BOT CONNECTE")
+        print(f"Bot connecté : {self.nick}")
 
     async def event_message(self, message):
         if message.echo:
@@ -28,7 +30,7 @@ class Bot(commands.Bot):
             if traduction and traduction.lower() != texte.lower():
                 await message.channel.send("Traduction : " + traduction)
         except Exception as e:
-            print("Erreur traduction:", e)
+            print("Erreur traduction :", e)
 
         if message.content.lower() == "!hello":
             await message.channel.send("Salut " + message.author.name)
