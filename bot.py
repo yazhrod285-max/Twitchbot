@@ -8,20 +8,6 @@ TOKEN = os.getenv("TOKEN")
 # ✅ TES CHAÎNES
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
-# 🌍 Langue → affichage propre avec drapeau visible
-lang_display = {
-    "en": "🇺🇸 anglais",
-    "es": "🇪🇸 espagnol",
-    "de": "🇩🇪 allemand",
-    "it": "🇮🇹 italien",
-    "pt": "🇵🇹 portugais",
-    "ru": "🇷🇺 russe",
-    "ja": "🇯🇵 japonais",
-    "ko": "🇰🇷 coréen",
-    "zh-cn": "🇨🇳 chinois",
-    "ar": "🇸🇦 arabe"
-}
-
 class Bot(commands.Bot):
 
     def __init__(self):
@@ -63,12 +49,9 @@ class Bot(commands.Bot):
             if traduction.lower() == texte:
                 return
 
-            # 🌍 affichage langue + drapeau
-            langue_affichee = lang_display.get(langue, f"🌍 {langue}")
-
-            # ✅ UN SEUL MESSAGE
+            # 🌍 affichage simple et fiable
             await message.channel.send(
-                f"@{message.author.name} a dit en {langue_affichee} : [ {traduction} ]"
+                f"🌍 @{message.author.name} a dit en {langue} : [ {traduction} ]"
             )
 
         except Exception as e:
