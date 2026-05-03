@@ -3,12 +3,14 @@ from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
-CHANNELS = os.getenv("CHANNELS")
 
-if not CHANNELS:
-    raise Exception("CHANNELS manquant dans Railway")
+channels_env = os.getenv("CHANNELS")
 
-channels_list = CHANNELS.split(",")
+if channels_env:
+    channels_list = channels_env.split(",")
+else:
+    # fallback si Railway bug
+    channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
 class Bot(commands.Bot):
 
@@ -21,39 +23,31 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"Bot connecté : {self.nick}")
+        print(f"Channels : {channels_list}")
 
     async def event_message(self, message):
-        # ❌ ignore les messages du bot
-        if message.author.name.lower() == self.nick.lower():
+        # ❌ ignore ses propres messages (évite le spam + répétition)
+        if message.echo:
             return
 
         texte = message.content.strip()
 
-        # ❌ ignore messages trop courts (évite "hello", "ok", etc.)
-        if len(texte) < 5:
+        # ❌ ignore message vide
+        if not texte:
             return
 
-        # ❌ ignore messages déjà traités
-        if "🌍" in texte:
-            return
-
-        # Traduction
         try:
             translated = GoogleTranslator(source='auto', target='fr').translate(texte)
         except:
             return
 
-        # ❌ ignore si déjà français ou quasi identique
+        # ❌ si identique → pas de traduction
         if texte.lower() == translated.lower():
             return
 
-        # ❌ ignore traductions trop simples (genre hello → bonjour)
-        if translated.lower() in ["bonjour", "salut"]:
-            return
-
-        # ✅ UNIQUEMENT traduction utile
+        # ✅ UNE SEULE réponse propre (et rien d’autre)
         await message.channel.send(
-            f"🌍 {message.author.name} → {translated}"
+            f"🌍 {message.author.name} a dit : [ {translated} ]"
         )
 
 bot = Bot()
