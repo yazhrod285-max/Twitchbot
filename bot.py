@@ -5,7 +5,7 @@ from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
 
-# ✅ TES CHANNELS DIRECTEMENT ICI
+# ✅ Tes chaînes directement intégrées
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
 class Bot(commands.Bot):
@@ -25,28 +25,33 @@ class Bot(commands.Bot):
         if message.echo:
             return
 
-        texte = message.content.strip()
+        texte = message.content.strip().lower()
 
-        # Ignore messages trop courts
+        # ❌ Ignore messages trop courts
         if len(texte) < 2:
             return
 
-        try:
-            langue_detectee = detect(texte)
+        # 🔴 Bloque mots français simples (anti bug langdetect)
+        mots_fr = ["salut", "bonjour", "bonsoir", "coucou", "ça va", "cc"]
+        if texte in mots_fr:
+            return
 
-            # ❌ Ignore le français
-            if langue_detectee == "fr":
+        try:
+            langue = detect(texte)
+
+            # ❌ Ignore français
+            if langue == "fr":
                 return
 
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
 
-            # ❌ Sécurité anti bug (évite traduire "bonjour")
-            if traduction.lower() == texte.lower():
+            # ❌ Ignore si identique
+            if traduction.lower() == texte:
                 return
 
-            # ✅ UN SEUL MESSAGE (celui que tu veux)
+            # ✅ UNE SEULE réponse propre
             await message.channel.send(
-                f"@{message.author.name} a dit en {langue_detectee} : [ {traduction} ]"
+                f"@{message.author.name} a dit en {langue} : [ {traduction} ]"
             )
 
         except Exception as e:
