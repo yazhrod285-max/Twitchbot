@@ -9,7 +9,6 @@ channels_env = os.getenv("CHANNELS")
 if channels_env:
     channels_list = channels_env.split(",")
 else:
-    # fallback si Railway bug
     channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
 class Bot(commands.Bot):
@@ -23,16 +22,14 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"Bot connecté : {self.nick}")
-        print(f"Channels : {channels_list}")
 
     async def event_message(self, message):
-        # ❌ ignore ses propres messages (évite le spam + répétition)
+        # ❌ ignore ses propres messages
         if message.echo:
             return
 
         texte = message.content.strip()
 
-        # ❌ ignore message vide
         if not texte:
             return
 
@@ -41,13 +38,13 @@ class Bot(commands.Bot):
         except:
             return
 
-        # ❌ si identique → pas de traduction
+        # ❌ si identique → pas de réponse
         if texte.lower() == translated.lower():
             return
 
-        # ✅ UNE SEULE réponse propre (et rien d’autre)
+        # ✅ UNE SEULE réponse (la bonne)
         await message.channel.send(
-            f"🌍 {message.author.name} a dit : [ {translated} ]"
+            f"@{message.author.name} a dit : [ {translated} ]"
         )
 
 bot = Bot()
