@@ -23,13 +23,17 @@ class Bot(commands.Bot):
         print(f"Bot connecté : {self.nick}")
 
     async def event_message(self, message):
-        # Ignore messages du bot (IMPORTANT)
+        # ❌ ignore les messages du bot
         if message.author.name.lower() == self.nick.lower():
             return
 
-        texte = message.content
+        texte = message.content.strip()
 
-        # Ignore messages déjà traduits
+        # ❌ ignore messages trop courts (évite "hello", "ok", etc.)
+        if len(texte) < 5:
+            return
+
+        # ❌ ignore messages déjà traités
         if "🌍" in texte:
             return
 
@@ -39,11 +43,15 @@ class Bot(commands.Bot):
         except:
             return
 
-        # Ignore si déjà français
+        # ❌ ignore si déjà français ou quasi identique
         if texte.lower() == translated.lower():
             return
 
-        # ✅ SEULEMENT la traduction
+        # ❌ ignore traductions trop simples (genre hello → bonjour)
+        if translated.lower() in ["bonjour", "salut"]:
+            return
+
+        # ✅ UNIQUEMENT traduction utile
         await message.channel.send(
             f"🌍 {message.author.name} → {translated}"
         )
