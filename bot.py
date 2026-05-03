@@ -1,15 +1,8 @@
 import os
 from twitchio.ext import commands
-from deep_translator import GoogleTranslator
-from openai import OpenAI
 
 TOKEN = os.getenv("TOKEN")
 CHANNEL = os.getenv("CHANNEL")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key="TA_CLE_ICI")
-
-
 
 class Bot(commands.Bot):
 
@@ -21,39 +14,20 @@ class Bot(commands.Bot):
         )
 
     async def event_ready(self):
-        print(f"Bot connecté : {self.nick}")
+        print(f"Connecté en tant que {self.nick}")
 
     async def event_message(self, message):
         if message.echo:
             return
 
-        text = message.content
+        if "salut" in message.content.lower():
+            await message.channel.send(f"Salut {message.author.name} 👋")
 
-        # 🔹 Traduction automatique
-        try:
-            translated = GoogleTranslator(source='auto', target='fr').translate(text)
-            if translated.lower() != text.lower():
-                await message.channel.send(translated)
-                return
-        except:
-            pass
+        await self.handle_commands(message)
 
-        # 🔹 IA (ChatGPT)
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini",
-                messages=[
-                    {"role": "system", "content": "Tu es un bot Twitch sympa."},
-                    {"role": "user", "content": text}
-                ],
-                max_tokens=100
-            )
-
-            answer = response.choices[0].message.content
-        except:
-            answer = "😅 petit bug, réessaie"
-
-        await message.channel.send(answer)
+    @commands.command()
+    async def hello(self, ctx):
+        await ctx.send(f"Hello {ctx.author.name} ! 👋")
 
 bot = Bot()
 bot.run()
