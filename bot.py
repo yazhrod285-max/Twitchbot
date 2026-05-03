@@ -2,9 +2,13 @@ import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
-# Récupération des variables Railway
+# Variables Railway
 TOKEN = os.getenv("TOKEN")
 CHANNEL = os.getenv("CHANNEL")
+
+# DEBUG (ça va afficher dans Railway)
+print("TOKEN =", TOKEN)
+print("CHANNEL =", CHANNEL)
 
 class Bot(commands.Bot):
 
@@ -24,7 +28,6 @@ class Bot(commands.Bot):
 
         texte = message.content
 
-        # Traduction automatique
         try:
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
 
@@ -34,10 +37,8 @@ class Bot(commands.Bot):
         except Exception as e:
             print("Erreur traduction :", e)
 
-        # Commande simple
         if texte.lower() == "hello":
             await message.channel.send(f"Salut {message.author.name}")
 
-# Lancement du bot
 bot = Bot()
 bot.run()
