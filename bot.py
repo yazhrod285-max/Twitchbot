@@ -2,20 +2,9 @@ import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
 
-# Récupération du token
+# Récupération des variables Railway
 TOKEN = os.getenv("TOKEN")
-
-# Récupération des chaînes (séparées par des virgules)
-CHANNELS = os.getenv("CHANNELS")
-
-# Sécurité si jamais la variable est vide
-if CHANNELS:
-    CHANNELS = CHANNELS.split(",")
-else:
-    CHANNELS = []
-
-print("TOKEN =", TOKEN)
-print("CHANNELS =", CHANNELS)
+channels = os.getenv("CHANNELS").split(",")
 
 class Bot(commands.Bot):
 
@@ -23,11 +12,12 @@ class Bot(commands.Bot):
         super().__init__(
             token=TOKEN,
             prefix="!",
-            initial_channels=CHANNELS
+            initial_channels=channels
         )
 
     async def event_ready(self):
         print(f"Bot connecté : {self.nick}")
+        print(f"CHANNELS = {channels}")
 
     async def event_message(self, message):
         if message.echo:
@@ -35,19 +25,13 @@ class Bot(commands.Bot):
 
         texte = message.content
 
-        # Traduction automatique
         try:
-            traduction = GoogleTranslator(source="auto", target="fr").translate(texte)
-
-            if traduction and traduction.lower() != texte.lower():
-                await message.channel.send(traduction)
-
+            traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
+            await message.channel.send(traduction)
         except Exception as e:
-            print("Erreur traduction :", e)
+            print(f"Erreur traduction : {e}")
 
-        # Commande simple
-        if texte.lower() == "hello":
-            await message.channel.send(f"Salut {message.author.name}")
+        await self.handle_commands(message)
 
 bot = Bot()
 bot.run()
