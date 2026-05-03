@@ -1,6 +1,7 @@
 import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
+from langdetect import detect
 
 TOKEN = os.getenv("TOKEN")
 
@@ -24,8 +25,8 @@ class Bot(commands.Bot):
         print(f"Bot connecté : {self.nick}")
 
     async def event_message(self, message):
-        # ❌ ignore ses propres messages
-        if message.echo:
+        # ❌ ignore tous les bots (très important)
+        if message.echo or message.author.name.lower().endswith("bot"):
             return
 
         texte = message.content.strip()
@@ -34,17 +35,38 @@ class Bot(commands.Bot):
             return
 
         try:
-            translated = GoogleTranslator(source='auto', target='fr').translate(texte)
+            # détecte automatiquement TOUTES les langues
+            langue_code = detect(texte)
+
+            # traduit en français
+            traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
+
         except:
             return
 
-        # ❌ si identique → pas de réponse
-        if texte.lower() == translated.lower():
+        # ❌ si déjà français → ignore
+        if langue_code == "fr":
             return
 
-        # ✅ UNE SEULE réponse (la bonne)
+        # mapping lisible (facultatif mais propre)
+        langues = {
+            "en": "anglais",
+            "es": "espagnol",
+            "de": "allemand",
+            "it": "italien",
+            "pt": "portugais",
+            "ru": "russe",
+            "ja": "japonais",
+            "ko": "coréen",
+            "zh-cn": "chinois",
+            "ar": "arabe"
+        }
+
+        langue_nom = langues.get(langue_code, langue_code)
+
+        # ✅ UNE SEULE réponse
         await message.channel.send(
-            f"@{message.author.name} a dit : [ {translated} ]"
+            f"@{message.author.name} a dit en {langue_nom} : [ {traduction} ]"
         )
 
 bot = Bot()
