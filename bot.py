@@ -1,16 +1,15 @@
 import os
 from twitchio.ext import commands
-from deep_translator import GoogleTranslator
 from langdetect import detect
+from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
+CHANNELS = os.getenv("CHANNELS")
 
-channels_env = os.getenv("CHANNELS")
+if not CHANNELS:
+    raise Exception("CHANNELS manquant")
 
-if channels_env:
-    channels_list = channels_env.split(",")
-else:
-    channels_list = ["biohazardbattles", "le_zombie_des_mers"]
+channels_list = [c.strip() for c in CHANNELS.split(",") if c.strip()]
 
 class Bot(commands.Bot):
 
@@ -23,41 +22,35 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"Bot connecté : {self.nick}")
+        print(f"Channels : {channels_list}")
 
     async def event_message(self, message):
-
-        # ❌ ignore TOUS les bots (y compris Lingo)
-        if message.echo or message.author.name.lower().endswith("bot"):
+        if message.echo:
             return
 
         texte = message.content.strip()
 
-        # ❌ ignore messages vides
-        if not texte:
-            return
-
-        # ❌ ignore messages déjà traités (évite boucle)
-        if "a dit en" in texte:
+        # Ignore messages trop courts
+        if len(texte) < 2:
             return
 
         try:
-            langue = detect(texte)
+            langue_detectee = detect(texte)
+
+            # ❌ Ignore le français
+            if langue_detectee == "fr":
+                return
+
+            # Traduction vers français
             traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
-        except:
-            return
 
-        # ❌ ignore si déjà français
-        if langue == "fr":
-            return
+            # 💥 UN SEUL MESSAGE (LE BON)
+            await message.channel.send(
+                f"@{message.author.name} a dit en {langue_detectee} : [ {traduction} ]"
+            )
 
-        # ❌ ignore si traduction identique
-        if texte.lower() == traduction.lower():
-            return
-
-        # ✅ UNE SEULE réponse
-        await message.channel.send(
-            f"@{message.author.name} a dit en {langue} : [ {traduction} ]"
-        )
+        except Exception as e:
+            print("Erreur :", e)
 
 bot = Bot()
 bot.run()
