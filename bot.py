@@ -5,30 +5,22 @@ from deep_translator import GoogleTranslator
 
 TOKEN = os.getenv("TOKEN")
 
-# ✅ Tes chaînes
+# ✅ TES CHAÎNES
 channels_list = ["biohazardbattles", "le_zombie_des_mers"]
 
-# 🌍 mapping langue → pays (pour drapeaux)
-lang_to_country = {
-    "en": "US",   # anglais → USA (plus logique que GB sur Twitch)
-    "fr": "FR",
-    "es": "ES",
-    "de": "DE",
-    "it": "IT",
-    "pt": "PT",
-    "ru": "RU",
-    "ja": "JP",
-    "ko": "KR",
-    "zh-cn": "CN",
-    "ar": "SA"
+# 🌍 Langue → affichage propre avec drapeau visible
+lang_display = {
+    "en": "🇺🇸 anglais",
+    "es": "🇪🇸 espagnol",
+    "de": "🇩🇪 allemand",
+    "it": "🇮🇹 italien",
+    "pt": "🇵🇹 portugais",
+    "ru": "🇷🇺 russe",
+    "ja": "🇯🇵 japonais",
+    "ko": "🇰🇷 coréen",
+    "zh-cn": "🇨🇳 chinois",
+    "ar": "🇸🇦 arabe"
 }
-
-# 🏳️ fonction pour générer les vrais drapeaux
-def get_flag(country_code):
-    try:
-        return ''.join(chr(127397 + ord(c)) for c in country_code.upper())
-    except:
-        return "🌍"
 
 class Bot(commands.Bot):
 
@@ -41,6 +33,7 @@ class Bot(commands.Bot):
 
     async def event_ready(self):
         print(f"✅ Bot connecté : {self.nick}")
+        print(f"📺 Channels : {channels_list}")
 
     async def event_message(self, message):
         if message.echo:
@@ -48,10 +41,11 @@ class Bot(commands.Bot):
 
         texte = message.content.strip().lower()
 
+        # ❌ ignore messages trop courts
         if len(texte) < 2:
             return
 
-        # 🔴 mots FR à ignorer (anti bug)
+        # 🔴 bloque mots FR simples
         mots_fr = ["salut", "bonjour", "bonsoir", "coucou", "ça va", "cc"]
         if texte in mots_fr:
             return
@@ -69,13 +63,12 @@ class Bot(commands.Bot):
             if traduction.lower() == texte:
                 return
 
-            # 🌍 récup drapeau
-            country = lang_to_country.get(langue, "UN")
-            drapeau = get_flag(country)
+            # 🌍 affichage langue + drapeau
+            langue_affichee = lang_display.get(langue, f"🌍 {langue}")
 
-            # ✅ message final propre
+            # ✅ UN SEUL MESSAGE
             await message.channel.send(
-                f"{drapeau} @{message.author.name} a dit en {langue} : [ {traduction} ]"
+                f"@{message.author.name} a dit en {langue_affichee} : [ {traduction} ]"
             )
 
         except Exception as e:
