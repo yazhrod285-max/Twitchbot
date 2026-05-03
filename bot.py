@@ -1,8 +1,9 @@
 import os
 from twitchio.ext import commands
 from deep_translator import GoogleTranslator
+from langdetect import detect
 
-# ===== CONFIG (temporaire pour que ça marche direct) =====
+# ===== CONFIG =====
 TOKEN = os.getenv("TOKEN")
 
 channels_env = "biohazardbattles,le_zombie_des_mers,maestrosfenomeno"
@@ -28,11 +29,20 @@ class Bot(commands.Bot):
 
         texte = message.content
 
+        # 🔥 Évite les messages trop courts (anti-spam)
+        if len(texte) < 4:
+            return
+
         try:
-            traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
-            await message.channel.send(traduction)
+            langue = detect(texte)
+
+            # ✅ Traduire UNIQUEMENT si ce n'est PAS du français
+            if langue != "fr":
+                traduction = GoogleTranslator(source='auto', target='fr').translate(texte)
+                await message.channel.send(traduction)
+
         except Exception as e:
-            print(f"Erreur traduction : {e}")
+            print(f"Erreur : {e}")
 
         await self.handle_commands(message)
 
